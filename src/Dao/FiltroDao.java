@@ -9,7 +9,10 @@ import Conexion.Conexion;
 import Modelo.Filtro;
 import com.sun.istack.internal.logging.Logger;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 /**
@@ -45,7 +48,7 @@ public class FiltroDao implements metodos<Filtro> {
         return false;
     }
     
-    public boolean delete(Object key) throws SQLException{
+    public boolean delete(Object key){
         PreparedStatement ps;
         try{
             ps= con.getCnx().prepareStatement(SQL_DELETE);
@@ -64,23 +67,65 @@ public class FiltroDao implements metodos<Filtro> {
         return false;
     }
     
-    public Filtro read(Object key){
+    public boolean update(Filtro e) throws SQLException{
+        PreparedStatement ps;
+        try{
+            System.out.println(c.getCodigo());
+            ps=con.getCnx().prepareStatement(SQL_UPDATE);
+            ps.setString(1, c.getMarca());
+            ps.setInt(2, c.getStock());
+            ps.setBoolean(3, c.getEcistencia());
+            ps.setString(4, c.getCodigo());
+            if(ps.executeUpdate() > 0){
+                return true;
+            }
+        }catch (SQLException ex){
+            System.out.println(ex.getMessage());
+            Logger.getLogger(FiltroDao.class.getName()).log(Level.SEVERE, null, ex);
+        }finally{
+            con.cerrarConexion();
+        }
+        return false;
+    }
+    
+    public Filtro read(object key){
         Filtro f=null;
         PreparedStatement ps;
-        ResultsSet rs;
+        ResultSet rs; 
         try{
-            ps= con.getCnx().prepareStatement(SQL_READ);
+            ps = con.getCnx().prepareStatement(SQL_READ);
             ps.setString(1, key.toString());
-            
             rs=ps.executeQuery();
             
-            while (rs.next()){
-                f= new Filtro(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getBoolean(5));
-                
+            while(rs.next()){
+                f= new Filtro (rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getInt(4), rs.getInt(5));
             }
             rs.close();
         }catch (SQLException ex){
             System.out.println(ex.getMessage());
+            Logger.getLogger(FiltroDao.class.getName()).log(Level.SEVERE, null, ex);
+        }finally{
+            con.cerrarConexion();
         }
+        return f;
     }
+    
+    public ArrayList<Filtro> readAll(){
+        ArrayList<Filtro> all = new ArrayList();
+        Statement s;
+        ResultSet rs;
+        try{
+            s= con.getCnx().prepareStatement(SQL_READALL);
+            rs = s.executeQuery(SQL_READALL);
+            while(rs.next()){
+                all.add(new Filtro(rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getInt(4), rs.getInt(5)));
+            }
+            rs.close();
+        }catch (SQLException ex){
+            Logger.getLogger(FiltroDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return all;
+        
+    }
+
 }
