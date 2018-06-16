@@ -8,12 +8,14 @@ package Vistas;
 import Dao.FiltroDao;
 import Modelo.Filtro;
 import java.awt.Container;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -141,5 +143,32 @@ public class Consulta extends JFrame {
         
         FiltroDao fd = new FiltroDao();
         ArrayList<Filtro> filtros = fd.readAll();
+        for (Filtro fi : filtros){
+            tm.addRow(new object[]{fi.getCodigo(), fi.getMarca(), fi.getStock(), fi.getExistencia()});
+        }
+        resultados.setModel(tm);
     }
+    
+    public void eventos(){
+        insertar.addActionListener(new ActionListener(){
+            FiltroDao fd= new FiltroDao();
+            Filtro f = new Filtro(codigo.getText(), marca.getSelectedItem().toString(),
+            Integer.parseInt(stock.getText()), true); 
+            
+            if(no.isSelected()){
+  {
+                f.setExistencia(false);
+                return null;
+            }
+            if(fd.create(f)){
+                JOptionPane.showMessageDialog(null, "Filtro regitrado con exito");
+                limpiarCampos();
+                llenarCampos();
+            }else{
+                JOptionPane.showMessageDialog(null, "Ocurrio un problema al momento de crear el filtro");
+            }
+    }
+          
+        });
+    
 }
